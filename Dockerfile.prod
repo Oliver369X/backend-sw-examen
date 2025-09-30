@@ -16,7 +16,8 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Instalar todas las dependencias (incluyendo devDependencies para compilar)
-RUN npm ci
+# Usar --include=dev para asegurar que se instalen las devDependencies
+RUN npm ci --include=dev
 
 # Copiar código fuente
 COPY . .
