@@ -1,0 +1,86 @@
+package {{packageName}}.controller;
+
+import {{packageName}}.dto.{{className}}DTO;
+import {{packageName}}.service.{{className}}Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Optional;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+@RestController
+@RequestMapping("/api/{{endpoint}}")
+@CrossOrigin(origins = "*")
+@Tag(name = "{{className}}", description = "{{className}} management APIs")
+public class {{className}}Controller {
+
+    @Autowired
+    private {{className}}Service {{serviceName}};
+
+    @Operation(summary = "Get all {{className}} items")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved list"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping
+    public ResponseEntity<List<{{className}}DTO>> getAll() {
+        List<{{className}}DTO> list = {{serviceName}}.findAll();
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(summary = "Get {{className}} by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved item"),
+        @ApiResponse(responseCode = "404", description = "Item not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<{{className}}DTO> getById(@PathVariable {{idType}} id) {
+        Optional<{{className}}DTO> item = {{serviceName}}.findById(id);
+        if (item.isPresent()) {
+            return ResponseEntity.ok(item.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Operation(summary = "Create a new {{className}}")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Successfully created"),
+        @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PostMapping
+    public ResponseEntity<{{className}}DTO> create(@RequestBody {{className}}DTO dto) {
+        {{className}}DTO saved = {{serviceName}}.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @Operation(summary = "Update {{className}} by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updated"),
+        @ApiResponse(responseCode = "404", description = "Item not found")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<{{className}}DTO> update(@PathVariable {{idType}} id, @RequestBody {{className}}DTO dto) {
+        try {
+            {{className}}DTO updated = {{serviceName}}.update(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Delete {{className}} by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully deleted"),
+        @ApiResponse(responseCode = "404", description = "Item not found")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable {{idType}} id) {
+        {{serviceName}}.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+}

@@ -1,0 +1,47 @@
+package {{packageName}}.dto;
+
+import java.util.Objects;
+
+public class {{className}}DTO {
+
+    {{#each attributes}}
+    {{#unless (eq name "id")}}
+    private {{javaType}} {{name}};
+
+    {{/unless}}
+    {{/each}}
+    public {{className}}DTO() {
+    }
+
+    {{#each attributes}}
+    {{#unless (eq name "id")}}
+    public {{javaType}} get{{capitalize name}}() {
+        return {{name}};
+    }
+
+    public void set{{capitalize name}}({{javaType}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+
+    {{/unless}}
+    {{/each}}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        {{className}}DTO dto = ({{className}}DTO) o;
+        return {{#each attributes}}{{#unless (eq name "id")}}Objects.equals({{name}}, dto.{{name}}){{#unless @last}} && {{/unless}}{{/unless}}{{/each}};
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash({{#each attributes}}{{#unless (eq name "id")}}{{name}}{{#unless @last}}, {{/unless}}{{/unless}}{{/each}});
+    }
+
+    @Override
+    public String toString() {
+        return "{{className}}DTO{" +
+            {{#each attributes}}{{#unless (eq name "id")}}"{{name}}=" + {{name}}{{#unless @last}} + ", " + {{/unless}}{{/unless}}{{/each}} +
+            '}';
+    }
+}

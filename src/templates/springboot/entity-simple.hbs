@@ -1,0 +1,79 @@
+package {{packageName}};
+
+{{#each imports}}
+import {{this}};
+{{/each}}
+
+@Entity
+@Table(name = "{{tableName}}")
+public class {{className}} {
+    {{#each attributes}}
+    {{#if (eq name "id")}}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private {{javaType}} {{name}};
+    {{else}}
+    @Column({{#unless nullable}}nullable = false{{/unless}}{{#if unique}}, unique = true{{/if}})
+    {{#if isRequired}}@NotNull{{/if}}
+    {{#if (eq type "String")}}@NotBlank{{/if}}
+    {{#if (eq name "email")}}@Email{{/if}}
+    private {{javaType}} {{name}};
+    {{/if}}
+    {{/each}}
+
+    // Constructors
+    public {{className}}() {}
+
+    public {{className}}({{#each attributes}}{{#unless (eq name "id")}}{{javaType}} {{name}}{{#unless @last}}, {{/unless}}{{/unless}}{{/each}}) {
+        {{#each attributes}}
+        {{#unless (eq name "id")}}this.{{name}} = {{name}};
+        {{/unless}}
+        {{/each}}
+    }
+
+    // Getters and Setters
+    {{#each attributes}}
+    public {{javaType}} get{{capitalize name}}() {
+        return {{name}};
+    }
+
+    public void set{{capitalize name}}({{javaType}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+    {{/each}}
+
+    // Business Methods
+    public boolean isValid() {
+        return true;
+    }
+
+    // Utility Methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof {{className}})) return false;
+        {{className}} that = ({{className}}) o;
+        {{#each attributes}}
+        {{#if (eq name "id")}}
+        return Objects.equals({{name}}, that.{{name}});
+        {{/if}}
+        {{/each}}
+    }
+
+    @Override
+    public int hashCode() {
+        {{#each attributes}}
+        {{#if (eq name "id")}}
+        return Objects.hash({{name}});
+        {{/if}}
+        {{/each}}
+    }
+
+    @Override
+    public String toString() {
+        return "{{className}}{" +
+                "id=" + id +
+                ", name=" + name +
+                '}';
+    }
+}

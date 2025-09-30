@@ -1,0 +1,85 @@
+package {{packageName}};
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.*;
+import java.util.Objects;
+
+public class {{className}}DTO {
+    {{#each attributes}}
+    {{#unless (eq name "id")}}
+    {{#if (eq type "String")}}
+    @NotBlank(message = "{{capitalize name}} is required")
+    @Size(max = 255, message = "{{capitalize name}} must not exceed 255 characters")
+    {{/if}}
+    {{#if (eq type "Integer")}}
+    @NotNull(message = "{{capitalize name}} is required")
+    @Min(value = 0, message = "{{capitalize name}} must be greater than or equal to 0")
+    {{/if}}
+    {{#if (eq type "Long")}}
+    @NotNull(message = "{{capitalize name}} is required")
+    @Min(value = 0, message = "{{capitalize name}} must be greater than or equal to 0")
+    {{/if}}
+    {{#if (eq type "BigDecimal")}}
+    @NotNull(message = "{{capitalize name}} is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "{{capitalize name}} must be greater than 0")
+    {{/if}}
+    {{#if (eq type "Boolean")}}
+    @NotNull(message = "{{capitalize name}} is required")
+    {{/if}}
+    @JsonProperty("{{name}}")
+    private {{javaType}} {{name}};
+    {{/unless}}
+    {{/each}}
+
+    // Constructors
+    public {{className}}DTO() {}
+
+    public {{className}}DTO({{#each attributes}}{{#unless (eq name "id")}}{{javaType}} {{name}}{{#unless @last}}, {{/unless}}{{/unless}}{{/each}}) {
+        {{#each attributes}}
+        {{#unless (eq name "id")}}this.{{name}} = {{name}};
+        {{/unless}}
+        {{/each}}
+    }
+
+    // Getters and Setters
+    {{#each attributes}}
+    {{#unless (eq name "id")}}
+    public {{javaType}} get{{capitalize name}}() {
+        return {{name}};
+    }
+
+    public void set{{capitalize name}}({{javaType}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+    {{/unless}}
+    {{/each}}
+
+    // Utility Methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof {{className}}DTO)) return false;
+        {{className}}DTO that = ({{className}}DTO) o;
+        {{#each attributes}}
+        {{#unless (eq name "id")}}
+        return Objects.equals({{name}}, that.{{name}});
+        {{/unless}}
+        {{/each}}
+    }
+
+    @Override
+    public int hashCode() {
+        {{#each attributes}}
+        {{#unless (eq name "id")}}
+        return Objects.hash({{name}});
+        {{/unless}}
+        {{/each}}
+    }
+
+    @Override
+    public String toString() {
+        return "{{className}}DTO{" +
+                "name=" + name +
+                '}';
+    }
+}

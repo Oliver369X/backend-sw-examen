@@ -1,0 +1,14 @@
+package {{packageName}};
+
+import {{packageName}}.entity.{{className}};
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class {{className}}Test {
+
+    @Test
+    void testEntityCreation() {
+        {{className}} entity = new {{className}}();
+        assertNotNull(entity);
+    }
+}

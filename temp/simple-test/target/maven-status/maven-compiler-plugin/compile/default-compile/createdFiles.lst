@@ -1,0 +1,9 @@
+com\example\test\service\TestEntityService.class
+com\example\test\repository\TestEntityRepository.class
+com\example\test\SimpleTestApplication.class
+com\example\test\entity\TestEntity.class
+com\example\test\config\GlobalExceptionHandler.class
+com\example\test\dto\TestEntityDTO.class
+com\example\test\mapper\TestEntityMapper.class
+com\example\test\controller\TestEntityController.class
+com\example\test\config\CacheConfig.class

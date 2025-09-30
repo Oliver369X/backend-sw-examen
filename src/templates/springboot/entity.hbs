@@ -1,0 +1,57 @@
+package {{packageName}}.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import java.util.Objects;
+
+@Entity
+@Table(name = "{{tableName}}")
+public class {{className}} {
+
+    {{#each attributes}}
+    {{#if (eq name "id")}}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    {{else}}
+    @Column
+    {{/if}}
+    private {{javaType}} {{name}};
+
+    {{/each}}
+    public {{className}}() {
+    }
+
+    {{#each attributes}}
+    public {{javaType}} get{{capitalize name}}() {
+        return {{name}};
+    }
+
+    public void set{{capitalize name}}({{javaType}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+
+    {{/each}}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        {{className}} entity = ({{className}}) o;
+        return Objects.equals({{#each attributes}}{{#if (eq name "id")}}{{name}}{{/if}}{{/each}}, entity.{{#each attributes}}{{#if (eq name "id")}}{{name}}{{/if}}{{/each}});
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash({{#each attributes}}{{#if (eq name "id")}}{{name}}{{/if}}{{/each}});
+    }
+
+    @Override
+    public String toString() {
+        return "{{className}}{" +
+            {{#each attributes}}"{{name}}=" + {{name}}{{#unless @last}} + ", " + {{/unless}}{{/each}} +
+            '}';
+    }
+}

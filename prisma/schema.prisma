@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// El modelo Rol ha sido eliminado según los requisitos
+
+model Usuario {
+  id          String         @id @default(uuid()) 
+  ci          String?        @unique 
+  nombre      String
+  apellidos   String?
+  correo      String         @unique
+  contrasena  String
+
+
+  salas       UsuarioSala[]  @relation("UsuarioSalaUsuario")
+  salasHost   Sala[]         @relation("UsuarioSalas")
+}
+
+model Sala {
+  id          String              @id @default(uuid())
+  nombre      String
+  capacidad   Int
+  descripcion String
+  esPrivada   Boolean
+  diagrama    Json
+  idHost      String // Referencia al nuevo campo 'id' de Usuario
+
+  host        Usuario             @relation("UsuarioSalas", fields: [idHost], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  usuarios    UsuarioSala[]       @relation("UsuarioSalaSala")
+}
+
+model UsuarioSala {
+  id        String   @id @default(uuid())
+  idUsuario String   // Referencia al nuevo campo 'id' de Usuario
+  idSala    String
+  rol       String   // ejemplo: "participante", "moderador"
+  fecha     DateTime @default(now())
+
+  usuario   Usuario  @relation("UsuarioSalaUsuario", fields: [idUsuario], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  sala      Sala     @relation("UsuarioSalaSala", fields: [idSala], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([idUsuario, idSala]) // Previene duplicados
+} 

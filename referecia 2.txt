@@ -1,0 +1,507 @@
+# Plataforma CASE - Generador Colaborativo de Backend
+
+## 🎯 Resumen Ejecutivo
+
+**Plataforma de Diseño y Generación de Backend Colaborativo** es una herramienta CASE web que permite a desarrolladores crear diagramas UML de clases de forma colaborativa y generar automáticamente código Spring Boot completo y funcional.
+
+### Propuesta de Valor
+- **Diseño Visual**: Interface drag & drop para crear diagramas UML
+- **Colaboración Real-time**: Múltiples desarrolladores trabajando simultáneamente
+- **Generación Automática**: Código Spring Boot completo desde UML
+- **Asistencia IA**: Sugerencias inteligentes para optimizar el diseño
+- **Lista para Usar**: Proyecto compilable con APIs REST y base de datos
+
+---
+
+## 🏗️ Arquitectura del Backend (TypeScript/Node.js)
+
+### Stack Tecnológico Principal
+```
+Framework: Express.js + TypeScript
+Base de Datos: PostgreSQL + Prisma ORM
+Tiempo Real: Socket.io
+Autenticación: JWT
+Cache: Redis
+Templates: Handlebars
+IA: OpenAI API
+```
+
+### Módulos del Sistema
+
+#### 1. **Autenticación y Usuarios**
+- Registro/Login con JWT
+- Gestión de sesiones
+- Middleware de autorización
+- Control de acceso por proyecto
+
+#### 2. **Gestión de Proyectos**
+- CRUD completo de proyectos
+- Invitación a colaboradores
+- Versionado de diagramas
+- Organización por usuario
+
+#### 3. **Motor UML**
+- Parser/serializer de diagramas JSON
+- Validación de integridad del modelo
+- Soporte para clases, atributos, relaciones
+- Validación de tipos de datos
+
+#### 4. **Colaboración Tiempo Real**
+- WebSocket rooms por proyecto
+- Sincronización de cambios instantánea
+- Cursores de colaboradores
+- Resolución de conflictos
+
+#### 5. **Generador de Código Spring Boot**
+- Motor de templates Handlebars
+- Generación de entidades JPA
+- Repositorios + Servicios + Controladores
+- Estructura completa de proyecto Maven
+
+#### 6. **Asistencia por IA**
+- Sugerencias de atributos por nombre de clase
+- Validación semántica de relaciones
+- Patrones de diseño recomendados
+- Optimización del modelo
+
+---
+
+## 📊 Modelo de Datos
+
+### Entidades Principales
+
+#### User
+```typescript
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  password: string; // hasheado
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### Project  
+```typescript
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  isCollaborative: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### UMLDiagram
+```typescript
+interface UMLDiagram {
+  id: string;
+  projectId: string;
+  diagramData: {
+    classes: UMLClass[];
+    relationships: UMLRelationship[];
+    metadata: DiagramMetadata;
+  };
+  version: number;
+  updatedAt: Date;
+}
+```
+
+#### UMLClass
+```typescript
+interface UMLClass {
+  id: string;
+  name: string;
+  attributes: UMLAttribute[];
+  position: { x: number; y: number };
+  stereotype?: string;
+}
+
+interface UMLAttribute {
+  name: string;
+  type: string; // Java types: String, Integer, Long, etc.
+  visibility: 'private' | 'public' | 'protected';
+  isRequired: boolean;
+  defaultValue?: string;
+}
+```
+
+#### UMLRelationship  
+```typescript
+interface UMLRelationship {
+  id: string;
+  type: 'association' | 'inheritance' | 'composition' | 'aggregation';
+  sourceClassId: string;
+  targetClassId: string;
+  cardinality: '1:1' | '1:N' | 'N:M';
+  name?: string;
+}
+```
+
+---
+
+## 🔌 APIs Principales
+
+### Autenticación
+```
+POST /api/auth/register     - Registro de usuario
+POST /api/auth/login        - Login
+POST /api/auth/logout       - Logout  
+GET  /api/auth/me          - Info usuario actual
+```
+
+### Proyectos
+```
+POST   /api/projects                    - Crear proyecto
+GET    /api/projects                    - Listar mis proyectos
+GET    /api/projects/:id                - Obtener proyecto
+PUT    /api/projects/:id                - Actualizar proyecto
+DELETE /api/projects/:id                - Eliminar proyecto
+POST   /api/projects/:id/invite         - Invitar colaborador
+```
+
+### Diagramas UML
+```
+GET /api/projects/:id/diagram           - Cargar diagrama
+PUT /api/projects/:id/diagram           - Guardar diagrama
+POST /api/projects/:id/diagram/validate - Validar modelo
+GET /api/projects/:id/diagram/history   - Historial versiones
+```
+
+### Generación de Código
+```
+POST /api/projects/:id/generate/backend    - Generar Spring Boot
+POST /api/projects/:id/generate/postman    - Generar colección Postman
+GET  /api/projects/:id/download/:fileId    - Descargar archivos
+```
+
+### Asistencia IA
+```
+POST /api/projects/:id/ai/suggestions      - Sugerencias para clase
+POST /api/projects/:id/ai/validate         - Validación semántica
+POST /api/projects/:id/ai/patterns         - Patrones recomendados
+```
+
+### WebSocket (Colaboración)
+```
+WS /api/collaborate/:projectId
+Events:
+- join_project    - Unirse a sesión
+- diagram_change  - Cambio en diagrama  
+- cursor_move     - Movimiento cursor
+- user_joined     - Usuario se unió
+- user_left       - Usuario se fue
+```
+
+---
+
+## ⚙️ Flujo de Generación de Código
+
+### Input: Diagrama UML
+```json
+{
+  "classes": [
+    {
+      "id": "user_001",
+      "name": "User", 
+      "attributes": [
+        {"name": "id", "type": "Long", "visibility": "private"},
+        {"name": "email", "type": "String", "visibility": "private"},
+        {"name": "username", "type": "String", "visibility": "private"}
+      ]
+    },
+    {
+      "id": "post_001", 
+      "name": "Post",
+      "attributes": [
+        {"name": "id", "type": "Long", "visibility": "private"},
+        {"name": "title", "type": "String", "visibility": "private"},
+        {"name": "content", "type": "String", "visibility": "private"}
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "type": "association",
+      "sourceClassId": "user_001",
+      "targetClassId": "post_001", 
+      "cardinality": "1:N"
+    }
+  ]
+}
+```
+
+### Output: Proyecto Spring Boot
+```
+generated-project/
+├── pom.xml
+├── src/main/java/com/generated/app/
+│   ├── Application.java
+│   ├── entity/
+│   │   ├── User.java        (@Entity, @Table, @JPA annotations)
+│   │   └── Post.java        (con @ManyToOne hacia User)
+│   ├── repository/
+│   │   ├── UserRepository.java  (extends JpaRepository)
+│   │   └── PostRepository.java
+│   ├── service/
+│   │   ├── UserService.java     (métodos CRUD + @Transactional)
+│   │   └── PostService.java
+│   └── controller/
+│       ├── UserController.java  (@RestController con endpoints)
+│       └── PostController.java
+└── src/main/resources/
+    └── application.properties   (config DB)
+```
+
+### Ejemplo: Entity Generada
+```java
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, unique = true)
+    private String email;
+    
+    @Column(nullable = false)
+    private String username;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Post> posts;
+    
+    // Constructors, getters, setters...
+}
+```
+
+---
+
+## 🔄 Colaboración en Tiempo Real
+
+### Flujo de Sincronización
+1. **Usuario A** mueve una clase en el diagrama
+2. **Frontend** envía evento via WebSocket
+3. **Backend** valida el cambio
+4. **Backend** actualiza estado en memoria
+5. **Backend** broadcast a todos los colaboradores  
+6. **Otros usuarios** ven el cambio instantáneamente
+
+### Gestión de Conflictos
+- **Last Write Wins**: El último cambio prevalece
+- **Element Locking**: Bloqueo temporal al editar propiedades
+- **Change Queue**: Cola de cambios para procesar en orden
+
+---
+
+## 🤖 Integración con IA
+
+### Funcionalidades IA
+1. **Sugerencias de Atributos**
+   - Input: "User" → Sugiere: id, email, username, password, createdAt
+   
+2. **Validación Semántica**
+   - Detecta relaciones faltantes obvias
+   - Sugiere tipos de datos apropiados
+   
+3. **Patrones de Diseño**
+   - Identifica oportunidades para Repository, Factory, etc.
+
+### Rate Limiting y Cache
+- **15 requests/15min** por usuario para IA
+- **Cache Redis** para respuestas similares  
+- **Fallback** a sugerencias por defecto si IA falla
+
+---
+
+## 📁 Estructura del Proyecto Backend
+
+```
+backend/
+├── src/
+│   ├── controllers/          # Endpoints REST
+│   │   ├── AuthController.ts
+│   │   ├── ProjectController.ts
+│   │   ├── DiagramController.ts  
+│   │   ├── GenerationController.ts
+│   │   └── AIController.ts
+│   ├── services/            # Lógica de negocio
+│   │   ├── AuthService.ts
+│   │   ├── ProjectService.ts
+│   │   ├── DiagramService.ts
+│   │   ├── CodeGenerationService.ts
+│   │   ├── CollaborationService.ts  
+│   │   └── AIService.ts
+│   ├── models/              # Prisma schema
+│   │   └── schema.prisma
+│   ├── generators/          # Motor generación código
+│   │   ├── SpringBootGenerator.ts
+│   │   ├── PostmanGenerator.ts
+│   │   └── templates/
+│   │       ├── entity.hbs
+│   │       ├── repository.hbs
+│   │       ├── service.hbs
+│   │       └── controller.hbs
+│   ├── websocket/          # Colaboración tiempo real
+│   │   ├── CollaborationSocket.ts
+│   │   └── SocketMiddleware.ts  
+│   ├── middleware/         # Middlewares Express
+│   │   ├── AuthMiddleware.ts
+│   │   ├── ValidationMiddleware.ts
+│   │   └── ErrorMiddleware.ts
+│   ├── types/             # TypeScript definitions  
+│   │   ├── auth.types.ts
+│   │   ├── project.types.ts
+│   │   ├── diagram.types.ts
+│   │   └── generation.types.ts
+│   ├── utils/             # Utilidades
+│   │   ├── JwtUtils.ts
+│   │   ├── ValidationUtils.ts
+│   │   └── FileUtils.ts
+│   └── config/           # Configuraciones
+│       ├── database.ts
+│       ├── redis.ts  
+│       └── socket.ts
+├── tests/               # Tests unitarios/integración
+├── docs/                # Documentación API
+├── docker-compose.yml   # PostgreSQL + Redis
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## 🚀 Casos de Uso Principales
+
+### CU1: Crear Proyecto
+1. Usuario autenticado crea nuevo proyecto
+2. Sistema genera proyecto vacío
+3. Usuario puede invitar colaboradores
+4. Se crea room de WebSocket para colaboración
+
+### CU2: Diseñar Diagrama  
+1. Usuario abre lienzo de diseño
+2. Arrastra clases desde paleta de herramientas
+3. Define atributos y tipos de datos
+4. Crea relaciones entre clases
+5. Sistema valida en tiempo real
+
+### CU3: Colaborar en Tiempo Real
+1. Múltiples usuarios en mismo proyecto
+2. Cambios se sincronizan instantáneamente  
+3. Cursores y selecciones visibles
+4. Chat/comentarios opcionales
+
+### CU4: Generar Código
+1. Usuario completa diseño UML
+2. Configura opciones de generación (package, DB, etc.)
+3. Sistema procesa diagrama con templates
+4. Genera proyecto Spring Boot completo
+5. Usuario descarga ZIP con código
+
+### CU5: Asistencia IA
+1. Usuario crea clase "Product"
+2. IA sugiere atributos: id, name, price, description
+3. Usuario acepta/modifica sugerencias  
+4. IA valida relaciones y sugiere optimizaciones
+
+---
+
+## 🔧 Configuración y Deployment
+
+### Variables de Entorno
+```bash
+# Base de datos
+DATABASE_URL=postgresql://user:pass@localhost:5432/casedb
+
+# JWT
+JWT_SECRET=your-super-secret-key
+JWT_EXPIRES_IN=7d
+
+# Redis  
+REDIS_URL=redis://localhost:6379
+
+# IA
+OPENAI_API_KEY=sk-your-openai-key
+
+# App
+PORT=3000
+NODE_ENV=production
+```
+
+### Docker Compose
+```yaml
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: casedb
+      POSTGRES_USER: caseuser
+      POSTGRES_PASSWORD: casepass
+    ports:
+      - "5432:5432"
+      
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+      
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres  
+      - redis
+```
+
+---
+
+## 📈 Métricas y Monitoreo
+
+### KPIs del Sistema
+- **Proyectos creados** por día/semana
+- **Código generado** (líneas, archivos)  
+- **Sesiones colaborativas** activas
+- **Consultas IA** realizadas
+- **Tiempo promedio** de generación
+
+### Health Checks
+```
+GET /api/health
+- Database connection
+- Redis connection  
+- IA API status
+- File system space
+```
+
+---
+
+## 🎯 Roadmap Futuro
+
+### Fase 1: MVP (Actual)
+✅ Autenticación básica  
+✅ CRUD proyectos
+✅ Editor UML drag & drop
+✅ Generación Spring Boot
+✅ Colaboración tiempo real
+✅ Asistencia IA básica
+
+### Fase 2: Mejoras
+- Múltiples tipos de diagramas (Secuencia, Casos de Uso)
+- Templates personalizables  
+- Integración con Git
+- Export a diferentes formatos
+
+### Fase 3: Enterprise
+- SSO/LDAP integration
+- Roles y permisos granulares
+- Métricas avanzadas
+- API rate limiting por usuario
+
+---
+
+Este proyecto combina **diseño visual**, **colaboración moderna** y **automatización inteligente** para revolucionar cómo los desarrolladores crean backends, reduciendo el tiempo de setup inicial de días a minutos.

@@ -1,0 +1,46 @@
+package {{packageName}}.mapper;
+
+import {{packageName}}.entity.{{className}};
+import {{packageName}}.dto.{{className}}DTO;
+import org.springframework.stereotype.Component;
+
+@Component
+public class {{className}}Mapper {
+
+    public {{className}}DTO toDTO({{className}} entity) {
+        if (entity == null) {
+            return null;
+        }
+        {{className}}DTO dto = new {{className}}DTO();
+        {{#each attributes}}
+        {{#unless (eq name "id")}}
+        dto.set{{capitalize name}}(entity.get{{capitalize name}}());
+        {{/unless}}
+        {{/each}}
+        return dto;
+    }
+
+    public {{className}} toEntity({{className}}DTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        {{className}} entity = new {{className}}();
+        {{#each attributes}}
+        {{#unless (eq name "id")}}
+        entity.set{{capitalize name}}(dto.get{{capitalize name}}());
+        {{/unless}}
+        {{/each}}
+        return entity;
+    }
+
+    public void updateEntityFromDTO({{className}} entity, {{className}}DTO dto) {
+        if (entity == null || dto == null) {
+            return;
+        }
+        {{#each attributes}}
+        {{#unless (eq name "id")}}
+        entity.set{{capitalize name}}(dto.get{{capitalize name}}());
+        {{/unless}}
+        {{/each}}
+    }
+}

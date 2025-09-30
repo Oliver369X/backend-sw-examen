@@ -1,0 +1,19 @@
+package {{packageName}};
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+{{#if includeSwagger}}
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
+{{/if}}
+
+@SpringBootApplication
+{{#if includeSwagger}}
+@OpenAPIDefinition(info = @Info(title = "{{projectName}} API", version = "1.0", description = "Generated from UML diagram"))
+{{/if}}
+public class {{projectName}}Application {
+    public static void main(String[] args) {
+        SpringApplication.run({{projectName}}Application.class, args);
+    }
+}
+

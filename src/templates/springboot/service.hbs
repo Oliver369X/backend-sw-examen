@@ -1,0 +1,53 @@
+package {{packageName}}.service;
+
+import {{packageName}}.dto.{{className}}DTO;
+import {{packageName}}.entity.{{className}};
+import {{packageName}}.mapper.{{className}}Mapper;
+import {{packageName}}.repository.{{className}}Repository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+public class {{className}}Service {
+
+    @Autowired
+    private {{className}}Repository {{repositoryName}};
+
+    @Autowired
+    private {{className}}Mapper {{entityName}}Mapper;
+
+    public List<{{className}}DTO> findAll() {
+        return {{repositoryName}}.findAll()
+            .stream()
+            .map({{entityName}}Mapper::toDTO)
+            .collect(Collectors.toList());
+    }
+
+    public Optional<{{className}}DTO> findById({{idType}} id) {
+        return {{repositoryName}}.findById(id)
+            .map({{entityName}}Mapper::toDTO);
+    }
+
+    public {{className}}DTO save({{className}}DTO {{entityName}}DTO) {
+        {{className}} {{entityName}} = {{entityName}}Mapper.toEntity({{entityName}}DTO);
+        {{className}} saved = {{repositoryName}}.save({{entityName}});
+        return {{entityName}}Mapper.toDTO(saved);
+    }
+
+    public {{className}}DTO update({{idType}} id, {{className}}DTO {{entityName}}DTO) {
+        {{className}} existing = {{repositoryName}}.findById(id)
+            .orElseThrow(() -> new RuntimeException("{{className}} not found"));
+        {{entityName}}Mapper.updateEntityFromDTO(existing, {{entityName}}DTO);
+        {{className}} updated = {{repositoryName}}.save(existing);
+        return {{entityName}}Mapper.toDTO(updated);
+    }
+
+    public void deleteById({{idType}} id) {
+        {{repositoryName}}.deleteById(id);
+    }
+}
