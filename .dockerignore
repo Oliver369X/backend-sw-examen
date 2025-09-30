@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+*.md
+.env
+dist
+coverage
+.next
+temp/*.zip
+temp/ecommerce-app
+temp/final-test*
+temp/simple-test
+test
+*.log
+.DS_Store

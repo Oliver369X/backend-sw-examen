@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: diagramador-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.prod
+    region: oregon
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://diagramador_108y_user:q4gNGN2VXK13CS7UVM6pRarxSzClGubc@dpg-d3ds3dodl3ps73c5guj0-a/diagramador_108y
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: tu_clave_secreta_super_segura_2024
+      - key: GEMINI_API_KEY
+        value: AIzaSyBzVhU-30JcNgJu0Xy5JkdKBGICbMUtbng
+    healthCheckPath: /
+    autoDeploy: true

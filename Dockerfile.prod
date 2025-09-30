@@ -1,0 +1,61 @@
+# Dockerfile optimizado para producción en Render
+FROM node:18-alpine AS builder
+
+# Instalar dependencias del sistema necesarias para compilar
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    postgresql-client
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalar todas las dependencias (incluyendo devDependencies para compilar)
+RUN npm ci
+
+# Copiar código fuente
+COPY . .
+
+# Generar cliente de Prisma
+RUN npx prisma generate
+
+# Compilar TypeScript
+RUN npm run build
+
+# Etapa de producción
+FROM node:18-alpine AS production
+
+# Instalar dependencias del sistema para producción
+RUN apk add --no-cache \
+    postgresql-client \
+    dumb-init
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos necesarios desde la etapa de builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package*.json ./
+
+# Crear directorio temp si no existe
+RUN mkdir -p temp
+
+# Exponer puerto
+EXPOSE 4000
+
+# Variables de entorno hardcodeadas para producción
+ENV NODE_ENV=production
+ENV PORT=4000
+ENV DATABASE_URL="postgresql://diagramador_108y_user:q4gNGN2VXK13CS7UVM6pRarxSzClGubc@dpg-d3ds3dodl3ps73c5guj0-a/diagramador_108y"
+ENV JWT_SECRET="tu_clave_secreta_super_segura_2024"
+ENV GEMINI_API_KEY="AIzaSyBzVhU-30JcNgJu0Xy5JkdKBGICbMUtbng"
+
+# Script de inicio que ejecuta migraciones y luego inicia el servidor
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
